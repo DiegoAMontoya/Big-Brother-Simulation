@@ -1,4 +1,5 @@
 import random as ran
+import time
 vote_record = {}
 evicted = []
 HOHs = []
@@ -8,10 +9,8 @@ fin_noms = []
 
 
 
-contestants = ['Camila','Diego','Dylan','Madison',
-               'Sydney','Eliana','Geoffrey','Evan',
-               'Ryan','Faith','Jaeden','Jaden',
-               'Gabby','Sara','Kaitlyn','Yogi']
+#contestants = ['Camila','Diego','Dylan','Madison','Sydney','Eliana','Geoffrey','Evan','Ryan','Faith','Jaeden','Jaden','Gabby','Sara','Kaitlyn','Yogi']
+contestants = ['Camila','Diego','Dylan','Madison','Sydney','Eliana','Geoffrey','Evan','Ryan','Faith','Jaeden','Jaden','Gabby','Sara','Kaitlyn','Yogi']
 
 HOH = False
 rem_con = contestants[:]
@@ -30,13 +29,14 @@ while len(rem_con)!=3:
     ran.shuffle(HOH_elig)
     HOH = HOH_elig[0]
     HOHs.append(HOH)
-    
+    input("This week's HOH is {}!\n".format(HOH))
     #initial nominees
     nom_elig = rem_con[:]
     nom_elig.remove(HOH)
     ran.shuffle(nom_elig)
     noms = nom_elig[0:2]
     init_noms.append(noms)
+    input("{} has nominated {} and {} for eviction.\n".format(HOH, noms[0],noms[1]))
     
     #veto selection and comp
     veto_play = [HOH]+noms
@@ -47,11 +47,14 @@ while len(rem_con)!=3:
             veto_play.append(i)
             if len(veto_play)==6:
                 break
+    input("Playing in the veto is {}.\n".format(veto_play))
     ran.shuffle(veto_play)
     v_win = veto_play[0]
     vetos.append(v_win)
-    
+    input("{} has won the power of veto!\n".format(v_win))
     #veto ceremony and rep nom
+    print("{} has decided to...".format(v_win))
+    time.sleep(1)
     if v_win != HOH:
         #1 = use, 0 = not using
         use = ran.randint(0, 1)
@@ -59,18 +62,28 @@ while len(rem_con)!=3:
             save = v_win
             if v_win in noms:
                 noms.remove(v_win)
+                input("use the power to save themself.\n")
             else:
                 select = ran.randint(0,1)
                 save = noms[select]
                 noms.remove(save)
+                input("use the power to save {}.\n".format(save))
             imm = noms + [save] + [v_win]
             ran.shuffle(nom_elig)
             for i in nom_elig:
                 if i not in imm:
                     noms.append(i)
                     break
-    fin_noms.append(noms)   
+            input("{} nominated {} in their place.\n".format(HOH,i))
+        else:
+            input("not use the power of veto.\n")
+    else:
+        input("not use the power of veto.\n")
+    fin_noms.append(noms)  
+    input("The final nominees are {} and {}.\n".format(noms[0],noms[1]))    
     #voting
+    print("We will now begin voting.\n")
+    time.sleep(1)
     vote_num = [0 for i in noms]
     for i in rem_con:
         if i in noms:
@@ -87,22 +100,33 @@ while len(rem_con)!=3:
         vote = ran.randint(0,len(noms)-1)
         vote_num[vote]+=1
         vote_record[HOH][-1]= noms[vote]+'*'  
-        
+        input("There is a tie. {}, as HOH, will break the tie.\n".format(HOH))
     #removes most voted for nominee
     elimdex = vote_num.index(max(vote_num))
     evicted.append(noms[elimdex])
     rem_con.remove(noms[elimdex])
+    vote_num.sort()
+    input("By a vote of {} - {}...\n".format(vote_num[0],vote_num[1]))
+    input("{} has been evicted from the big brother house.\n".format(noms[elimdex]))
+    print("-----------\n")
+          
    
 #final 3
+input("Welcome to the final 3!\n")
+input("{} compete in part 1 of the final HOH.\n".format(rem_con))
 ran.shuffle(rem_con)
 p1_w =  rem_con[0]
+input("{} wins part 1!\n".format(p1_w))
 p2_players = rem_con[1:3]
 ran.shuffle(p2_players)
 p2_w = p2_players[0]
+input("{} wins part 2!\n".format(p2_w))
 p3_players = [p1_w,p2_w]
+input("{} and {} compete in part 3.\n".format(p3_players[0],p3_players[1]))
 ran.shuffle(p3_players)
 HOH = p3_players[0]
 HOHs.append(HOH)
+input("{} is the final HOH!\n".format(HOH))
 noms = rem_con[:]
 noms.remove(HOH)
 init_noms.append(noms)
@@ -114,19 +138,24 @@ vote_num[vote]+=1
 vote_record[HOH].append(noms[vote]+'*')
 evicted.append(noms[vote])
 rem_con.remove(noms[vote])
-
+input("{} votes to evict...\n".format(HOH))
+print("{}.\n".format(noms[vote]))
+time.sleep(1)
+input("{} is the last person to be evicted from the big brother house.\n".format(noms[vote]))
 #finale
 finalist = rem_con[:]
 jury_num = len(evicted)//2
 if jury_num %2 != 1:
     jury_num += 1
 jury = evicted[len(evicted)-jury_num:]
-
+print("Please welcome back our jury!\n")
+input("{}\n".format(jury))
 for i in range(len(evicted)):
     if len(vote_record[rem_con[0]])-len(vote_record[evicted[i]]):
         for c in range(len(vote_record[rem_con[0]])-len(vote_record[evicted[i]])):
             vote_record[evicted[i]].append('    ')
-            
+print("The jury votes...\n")
+time.sleep(1)            
 vote_num = [0 for i in finalist]
 for i in jury:
     vote = ran.randint(0,len(finalist)-1)
@@ -142,7 +171,13 @@ for i in rem_con:
         vote_record[i].append('Runner-up')
 evicted.append(finalist[elimdex])
 rem_con.remove(finalist[elimdex])
-    
+  
+vote_num.sort()
+input("By a vote of {} - {}, the winner is...\n".format(vote_num[0],vote_num[1]))  
+time.sleep(1)
+input("{}!!!\n".format(rem_con[0]))
+
+
 for i in rem_con:
     print("{}:{}".format(i,vote_record[i]))
 for i in range(len(evicted)):
