@@ -10,15 +10,20 @@ fin_noms = []
 
 
 
-#contestants = ['Camila','Diego','Dylan','Madison','Sydney','Eliana','Geoffrey','Evan','Ryan','Faith','Jaeden','Jaden','Gabby','Sara','Kaitlyn','Yogi']
-contestants = ['Chris','Dad','Diego','Mom','Sabrina','Samantha','Collin','Savannah','Jaden','Eliana']
+contestants = ['Diego','Yogi','Sydney','Faith',
+               'Jaden','Eliana','Blake','Kate',
+               'Madison','Gabby','Dylan','Camila',
+               'Sara','Dav','Miles','Ryan','Kaitlyn']
+#contestants = ['Chris','Dad','Diego','Mom','Sabrina','Samantha','Collin','Savannah','Jaden','Eliana']
 
 HOH = False
 rem_con = contestants[:]
 for i in contestants:
     vote_record[i] = []
-
+week = 0
 while len(rem_con)!=3:
+    week +=1
+    print("Week {}:\n".format(week))
     
     #HOH competition    
     HOH_elig = rem_con[:]
@@ -72,7 +77,7 @@ while len(rem_con)!=3:
                 if i not in imm:
                     noms.append(i)
                     break
-            input("{} nominated {} in their place.\n".format(HOH,i))
+            input("{} has nominated {} in their place.\n".format(HOH,i))
         else:
             input("not use the power of veto.\n")
     else:
@@ -111,6 +116,7 @@ while len(rem_con)!=3:
     elimdex = vote_num.index(max(vote_num))
     evicted.append(noms[elimdex])
     rem_con.remove(noms[elimdex])
+    vote_record[noms[elimdex]].append("Evicted\nWeek {}".format(week))
     vote_num.sort()
     input("By a vote of {} - {}...\n".format(vote_num[0],vote_num[1]))
     print("{} has been evicted from the big brother house.\n".format(noms[elimdex]))
@@ -119,7 +125,7 @@ while len(rem_con)!=3:
     print("-----------\n")
           
    
-#final 3
+#%%final 3
 input("Welcome to the final 3!\n")
 input("{} compete in part 1 of the final HOH.\n".format(rem_con))
 ran.shuffle(rem_con)
@@ -146,11 +152,15 @@ vote_num[vote]+=1
 vote_record[HOH].append(noms[vote]+'*')
 evicted.append(noms[vote])
 rem_con.remove(noms[vote])
+vote_record[noms[vote]][-1] = "Evicted\nWeek {}".format(week+1)
+
 input("{} votes to evict...\n".format(HOH))
 print("{}.\n".format(noms[vote]))
 time.sleep(1)
 input("{} is the last person to be evicted from the big brother house.\n".format(noms[vote]))
-#finale
+
+
+#%%finale
 finalist = rem_con[:]
 jury_num = len(evicted)//2
 if jury_num %2 != 1:
@@ -186,12 +196,12 @@ time.sleep(1)
 print("{}!!!\n".format(rem_con[0]))
 time.sleep(1)
 
-for i in rem_con:
-    print("{}:{}".format(i,vote_record[i]))
-for i in range(len(evicted)):
-    print("{}:{}".format(evicted[-i-1],vote_record[evicted[-i-1]]))
+# for i in rem_con:
+#     print("{}:{}".format(i,vote_record[i]))
+# for i in range(len(evicted)):
+#     print("{}:{}".format(evicted[-i-1],vote_record[evicted[-i-1]]))
 
-#prep for spreadsheet
+#%%prep for spreadsheet
 final_plac = rem_con
 for i in range(len(evicted)):
     final_plac.append(evicted[-i-1])
@@ -230,6 +240,9 @@ nomFill = PatternFill(start_color='00959ffd',
 naFill = PatternFill(start_color='00A9A9A9',
                    end_color='00A9A9A9',
                    fill_type='solid')
+evFill = PatternFill(start_color='00fa8072',
+                   end_color='00fa8072',
+                   fill_type='solid')
 winnerFill = PatternFill(start_color='0073fb76',
                    end_color='0073fb76',
                    fill_type='solid')
@@ -239,9 +252,9 @@ ruFill = PatternFill(start_color='00d1e8ef',
 
 sheet["A1"] = "Contestants"
 sheet["A2"] = "HOH"
-sheet["A3"] = "Nominations (pre-veto)"
-sheet["A4"] = "Veto Winner"
-sheet["A5"] = "Nominations (post-veto)" 
+sheet["A3"] = "Nominations\n(pre-veto)"
+sheet["A4"] = "Veto\nWinner"
+sheet["A5"] = "Nominations\n(post-veto)" 
 for i in range(1,6):
     sheet["A{}".format(i)].fill = trowFill
     sheet["A{}".format(i)].font = Font(bold=True)
@@ -260,7 +273,10 @@ for i in range(len(episodes)):
     sheet["{}1".format(columns[i])].font = Font(bold=True)
     sheet["{}1".format(columns[i])].alignment = Alignment(horizontal="center")
     for c in range(len(records)):
-        sheet["{}{}".format(columns[i],c+2)] = str(records[c][i])
+        if records[c]==init_noms or records[c]==fin_noms:
+            sheet["{}{}".format(columns[i],c+2)] = "{}\n{}".format(records[c][i][0],records[c][i][1])
+        else:
+            sheet["{}{}".format(columns[i],c+2)] = str(records[c][i])
         sheet["{}{}".format(columns[i],c+2)].alignment = Alignment(horizontal="center")
         if str(records[c][i]) == '    ':
             sheet["{}{}".format(columns[i],c+2)].fill = naFill
@@ -276,16 +292,21 @@ for i in range(len(final_plac)):
         sheet["{}{}".format(columns[c],rows[final_plac[i]])] = vote_record[final_plac[i]][c]
         sheet["{}{}".format(columns[c],rows[final_plac[i]])].alignment = Alignment(horizontal="center")
         if vote_record[final_plac[i]][c] == 'NOM':
+            sheet["{}{}".format(columns[c],rows[final_plac[i]])] = 'Nominated'
+            sheet["{}{}".format(columns[c],rows[final_plac[i]])].font = Font(italic=True)
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = nomFill
         elif vote_record[final_plac[i]][c] == 'HOH' or '*' in vote_record[final_plac[i]][c]:
+            if '*' not in vote_record[final_plac[i]][c]:
+                sheet["{}{}".format(columns[c],rows[final_plac[i]])] = 'Head of\nHousehold'
+            sheet["{}{}".format(columns[c],rows[final_plac[i]])].font = Font(italic=True)
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = HOHFill
         elif vote_record[final_plac[i]][c] == 'Winner':
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = winnerFill  
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].font = Font(bold=True)  
         elif vote_record[final_plac[i]][c] == 'Runner-up':
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = ruFill              
-        elif vote_record[final_plac[i]][c] == '    ':
-            sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = naFill
+        elif vote_record[final_plac[i]][c] == '    ' or 'Evicted' in vote_record[final_plac[i]][c]:
+            sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = evFill
         else:
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = voteFill    
      
