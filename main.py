@@ -1,5 +1,6 @@
 import random as ran
 import time
+import vetos as v
 vote_record = {}
 evicted = []
 HOHs = []
@@ -10,15 +11,12 @@ fin_noms = []
 
 
 #contestants = ['Camila','Diego','Dylan','Madison','Sydney','Eliana','Geoffrey','Evan','Ryan','Faith','Jaeden','Jaden','Gabby','Sara','Kaitlyn','Yogi']
-contestants = ['Camila','Diego','Dylan','Madison','Sydney','Eliana','Geoffrey','Evan','Ryan','Faith','Jaeden','Jaden','Gabby','Sara','Kaitlyn','Yogi']
+contestants = ['Chris','Dad','Diego','Mom','Sabrina','Samantha','Collin','Savannah','Jaden','Eliana']
 
 HOH = False
 rem_con = contestants[:]
 for i in contestants:
     vote_record[i] = []
-
-
-
 
 while len(rem_con)!=3:
     
@@ -35,7 +33,7 @@ while len(rem_con)!=3:
     nom_elig.remove(HOH)
     ran.shuffle(nom_elig)
     noms = nom_elig[0:2]
-    init_noms.append(noms)
+    init_noms.append(noms.copy())
     input("{} has nominated {} and {} for eviction.\n".format(HOH, noms[0],noms[1]))
     
     #veto selection and comp
@@ -48,10 +46,10 @@ while len(rem_con)!=3:
             if len(veto_play)==6:
                 break
     input("Playing in the veto is {}.\n".format(veto_play))
-    ran.shuffle(veto_play)
-    v_win = veto_play[0]
+    v_win = v.veto(veto_play)
     vetos.append(v_win)
     input("{} has won the power of veto!\n".format(v_win))
+    
     #veto ceremony and rep nom
     print("{} has decided to...".format(v_win))
     time.sleep(1)
@@ -80,11 +78,16 @@ while len(rem_con)!=3:
     else:
         input("not use the power of veto.\n")
     fin_noms.append(noms)  
-    input("The final nominees are {} and {}.\n".format(noms[0],noms[1]))    
+    input("The final nominees are {} and {}.\n".format(noms[0],noms[1]))   
+    
     #voting
     print("We will now begin voting.\n")
     time.sleep(1)
-    vote_num = [0 for i in noms]
+    vote_num = []
+    votes = {}
+    for i in noms:
+        vote_num.append(0)
+        votes[i] = []
     for i in rem_con:
         if i in noms:
             vote_record[i].append('NOM')
@@ -94,20 +97,25 @@ while len(rem_con)!=3:
             vote = ran.randint(0,len(noms)-1)
             vote_num[vote]+=1
             vote_record[i].append(noms[vote])
+            votes[noms[vote]].append(i)
             
     #HOH vote if tied
     if vote_num[0]==vote_num[1]:
         vote = ran.randint(0,len(noms)-1)
         vote_num[vote]+=1
         vote_record[HOH][-1]= noms[vote]+'*'  
+        votes[noms[vote]].append(HOH)
         input("There is a tie. {}, as HOH, will break the tie.\n".format(HOH))
+        
     #removes most voted for nominee
     elimdex = vote_num.index(max(vote_num))
     evicted.append(noms[elimdex])
     rem_con.remove(noms[elimdex])
     vote_num.sort()
     input("By a vote of {} - {}...\n".format(vote_num[0],vote_num[1]))
-    input("{} has been evicted from the big brother house.\n".format(noms[elimdex]))
+    print("{} has been evicted from the big brother house.\n".format(noms[elimdex]))
+    time.sleep(1)
+    input("{}: {}\n{}: {}\n".format(noms[0],votes[noms[0]],noms[1],votes[noms[1]]))
     print("-----------\n")
           
    
@@ -175,8 +183,8 @@ rem_con.remove(finalist[elimdex])
 vote_num.sort()
 input("By a vote of {} - {}, the winner is...\n".format(vote_num[0],vote_num[1]))  
 time.sleep(1)
-input("{}!!!\n".format(rem_con[0]))
-
+print("{}!!!\n".format(rem_con[0]))
+time.sleep(1)
 
 for i in rem_con:
     print("{}:{}".format(i,vote_record[i]))
@@ -280,25 +288,5 @@ for i in range(len(final_plac)):
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = naFill
         else:
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = voteFill    
-  
-    
-    
-    
-    
+     
 wb.save(filename="bbsim.xlsx")    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
