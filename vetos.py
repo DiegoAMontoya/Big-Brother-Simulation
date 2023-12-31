@@ -1,5 +1,4 @@
 import random as ran
-import time
 #elim
 #race
 #time

@@ -1,36 +1,52 @@
 import random as ran
 import time
 import vetos as v
+import hoh as h
 vote_record = {}
 evicted = []
 HOHs = []
 vetos = []
 init_noms = []
 fin_noms = []
+elim_votes = []
+tot_votes = []
 
 
 
-contestants = ['Diego','Yogi','Sydney','Faith',
-               'Jaden','Eliana','Blake','Kate',
-               'Madison','Gabby','Dylan','Camila',
-               'Sara','Dav','Miles','Ryan','Kaitlyn']
-#contestants = ['Chris','Dad','Diego','Mom','Sabrina','Samantha','Collin','Savannah','Jaden','Eliana']
+contestants = ['Blake','Camila','Dav','Diego',
+                'Dylan','Eliana','Faith','Gabby',
+                'Ian','Jaden','Jaeden','Kaitlyn',
+                'Kate','Madison','Miles','Ryan',
+                'Richard','Sara','Sydney','Yogi']
 
+
+numcon =9# ran.randint(9,18)
 HOH = False
-rem_con = contestants[:]
+while True:
+    ran.shuffle(contestants)
+    rem_con = contestants[:numcon]
+    if 'Diego' in rem_con:
+        rem_con.sort()
+        contestants.sort()
+        print("{}\n".format(rem_con))
+        break
 for i in contestants:
     vote_record[i] = []
+jury_num = (len(rem_con)-2)//2
+if jury_num %2 != 1:
+    jury_num += 1
+    
 week = 0
 while len(rem_con)!=3:
     week +=1
     print("Week {}:\n".format(week))
-    
+    if len(rem_con)==jury_num + 2:
+        input("We have reached the jury stage!\n")
     #HOH competition    
     HOH_elig = rem_con[:]
     if HOH in HOH_elig:
         HOH_elig.remove(HOH)
-    ran.shuffle(HOH_elig)
-    HOH = HOH_elig[0]
+    HOH = h.hoh(HOH_elig)
     HOHs.append(HOH)
     input("This week's HOH is {}!\n".format(HOH))
     #initial nominees
@@ -38,6 +54,7 @@ while len(rem_con)!=3:
     nom_elig.remove(HOH)
     ran.shuffle(nom_elig)
     noms = nom_elig[0:2]
+    noms.sort()
     init_noms.append(noms.copy())
     input("{} has nominated {} and {} for eviction.\n".format(HOH, noms[0],noms[1]))
     
@@ -82,6 +99,7 @@ while len(rem_con)!=3:
             input("not use the power of veto.\n")
     else:
         input("not use the power of veto.\n")
+    noms.sort()
     fin_noms.append(noms)  
     input("The final nominees are {} and {}.\n".format(noms[0],noms[1]))   
     
@@ -116,13 +134,16 @@ while len(rem_con)!=3:
     elimdex = vote_num.index(max(vote_num))
     evicted.append(noms[elimdex])
     rem_con.remove(noms[elimdex])
-    vote_record[noms[elimdex]].append("Evicted\nWeek {}".format(week))
+    vote_record[noms[elimdex]].append("Evicted\n(Week {})".format(week))
     vote_num.sort()
     input("By a vote of {} - {}...\n".format(vote_num[0],vote_num[1]))
     print("{} has been evicted from the big brother house.\n".format(noms[elimdex]))
     time.sleep(1)
     input("{}: {}\n{}: {}\n".format(noms[0],votes[noms[0]],noms[1],votes[noms[1]]))
     print("-----------\n")
+    
+    elim_votes.append(max(vote_num))
+    tot_votes.append(sum(vote_num))    
           
    
 #%%final 3
@@ -142,6 +163,7 @@ HOH = p3_players[0]
 HOHs.append(HOH)
 input("{} is the final HOH!\n".format(HOH))
 noms = rem_con[:]
+noms.sort()
 noms.remove(HOH)
 init_noms.append(noms)
 
@@ -152,19 +174,17 @@ vote_num[vote]+=1
 vote_record[HOH].append(noms[vote]+'*')
 evicted.append(noms[vote])
 rem_con.remove(noms[vote])
-vote_record[noms[vote]][-1] = "Evicted\nWeek {}".format(week+1)
+vote_record[noms[vote]][-1] = "Evicted\n(Week {})".format(week+1)
 
 input("{} votes to evict...\n".format(HOH))
 print("{}.\n".format(noms[vote]))
 time.sleep(1)
 input("{} is the last person to be evicted from the big brother house.\n".format(noms[vote]))
-
+elim_votes.append(1)
+tot_votes.append(1) 
 
 #%%finale
 finalist = rem_con[:]
-jury_num = len(evicted)//2
-if jury_num %2 != 1:
-    jury_num += 1
 jury = evicted[len(evicted)-jury_num:]
 print("Please welcome back our jury!\n")
 input("{}\n".format(jury))
@@ -196,11 +216,6 @@ time.sleep(1)
 print("{}!!!\n".format(rem_con[0]))
 time.sleep(1)
 
-# for i in rem_con:
-#     print("{}:{}".format(i,vote_record[i]))
-# for i in range(len(evicted)):
-#     print("{}:{}".format(evicted[-i-1],vote_record[evicted[-i-1]]))
-
 #%%prep for spreadsheet
 final_plac = rem_con
 for i in range(len(evicted)):
@@ -224,7 +239,7 @@ sheet = wb.active
 episodes = list(range(1,len(vote_record[rem_con[0]])+1))
 alphabet = ['B','C','D','E','F','G','H','I','J','K','L','M','N',
             'O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC','AC']    
-
+#colors for the spreadsheet
 trowFill = PatternFill(start_color='00EAECF0',
                    end_color='00EAECF0',
                    fill_type='solid')
@@ -250,11 +265,11 @@ ruFill = PatternFill(start_color='00d1e8ef',
                    end_color='00d1e8ef',
                    fill_type='solid')
 
-sheet["A1"] = "Contestants"
-sheet["A2"] = "HOH"
+sheet["A2"] = "Head of\nHousehold"
 sheet["A3"] = "Nominations\n(pre-veto)"
 sheet["A4"] = "Veto\nWinner"
 sheet["A5"] = "Nominations\n(post-veto)" 
+#format the first column
 for i in range(1,6):
     sheet["A{}".format(i)].fill = trowFill
     sheet["A{}".format(i)].font = Font(bold=True)
@@ -266,7 +281,7 @@ for i in range(len(final_plac)):
     rows[final_plac[i]] = i+7
 for i in range(len(alphabet)):
     columns[i] = alphabet[i]
-    
+#add in contents of first row and format
 for i in range(len(episodes)):
     sheet["{}1".format(columns[i])] = "Week {}".format(episodes[i])    
     sheet["{}1".format(columns[i])].fill = trowFill
@@ -282,6 +297,8 @@ for i in range(len(episodes)):
             sheet["{}{}".format(columns[i],c+2)].fill = naFill
         else:
             sheet["{}{}".format(columns[i],c+2)].fill = voteFill
+sheet.merge_cells("{}1:{}1".format(columns[i-1],columns[i]))
+#player additions            
 for i in range(len(final_plac)):
     sheet["A{}".format(rows[final_plac[i]])] = final_plac[i]
     sheet["A{}".format(rows[final_plac[i]])].fill = trowFill
@@ -308,6 +325,29 @@ for i in range(len(final_plac)):
         elif vote_record[final_plac[i]][c] == '    ' or 'Evicted' in vote_record[final_plac[i]][c]:
             sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = evFill
         else:
-            sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = voteFill    
-     
+            sheet["{}{}".format(columns[c],rows[final_plac[i]])].fill = voteFill
+    
+sheet["A{}".format(rows[final_plac[-1]]+2)] = "Evicted"
+sheet["A{}".format(rows[final_plac[-1]]+2)].fill = trowFill
+sheet["A{}".format(rows[final_plac[-1]]+2)].font = Font(bold=True)
+sheet["A{}".format(rows[final_plac[-1]]+2)].alignment = Alignment(horizontal="center")
+sheet.merge_cells("A{}:A{}".format(rows[final_plac[-1]]+2,rows[final_plac[-1]]+3))
+
+for i in range(len(tot_votes)):
+    sheet["{}{}".format(columns[i],rows[final_plac[-1]]+2)] = "{}\n{} of {} votes\nto evict".format(final_plac[-1-i],elim_votes[i],tot_votes[i])
+    sheet["{}{}".format(columns[i],rows[final_plac[-1]]+2)].font = Font(bold=True)
+    sheet["{}{}".format(columns[i],rows[final_plac[-1]]+2)].alignment = Alignment(horizontal="center")
+    sheet["{}{}".format(columns[i],rows[final_plac[-1]]+2)].fill = evFill
+    sheet.merge_cells("{}{}:{}{}".format(columns[i],rows[final_plac[-1]]+2,columns[i],rows[final_plac[-1]]+3))
+
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+2)] = "{}\n{} votes\nto win".format(final_plac[1],vote_num[0])
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+2)].font = Font(bold=True)
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+2)].alignment = Alignment(horizontal="center")
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+2)].fill = ruFill
+
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+3)] = "{}\n{} votes\nto win".format(final_plac[0],vote_num[1])
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+3)].font = Font(bold=True)
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+3)].alignment = Alignment(horizontal="center")
+sheet["{}{}".format(columns[i+1],rows[final_plac[-1]]+3)].fill = winnerFill
+
 wb.save(filename="bbsim.xlsx")    
